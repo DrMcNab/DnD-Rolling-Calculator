@@ -67,8 +67,11 @@
         <label for="action">Select Action:</label>
         <select id="action"></select>
 
-        <label for="roll">Enter Roll:</label>
-        <input type="text" id="roll" placeholder="Enter your roll result (e.g., 15)">
+        <label for="attackRoll">Enter Attack Roll:</label>
+        <input type="text" id="attackRoll" placeholder="Enter your attack roll result (e.g., 15)">
+
+        <label for="damageRoll">Enter Damage Roll:</label>
+        <input type="text" id="damageRoll" placeholder="Enter your damage roll result (e.g., 8)">
 
         <label for="environment">Environmental Factor:</label>
         <select id="environment">
@@ -90,20 +93,17 @@
                 greataxe: {
                     name: "Attack with Greataxe",
                     abilityModifier: 3, // Strength modifier
-                    damageDice: "1d12",
                     extraDamage: 2, // Rage bonus, if applicable
                     description: "Add +3 for Strength and +2 if raging."
                 },
                 unarmedStrike: {
                     name: "Unarmed Strike",
                     abilityModifier: 3, // Strength modifier
-                    damageDice: "1d4",
                     description: "Add +3 for Strength."
                 },
                 environmentWeapon: {
                     name: "Use Environmental Weapon",
                     abilityModifier: 3, // Strength modifier
-                    damageDice: "1d8",
                     description: "Add +3 for Strength."
                 }
             },
@@ -111,20 +111,17 @@
                 pounce: {
                     name: "Pounce",
                     abilityModifier: 4, // Dexterity modifier
-                    damageDice: "2d4",
                     bonusDamageDice: "1d6",
                     description: "Add +4 for Dexterity. Follow up with bite: roll 1d6 for bite damage if target is prone."
                 },
                 bite: {
                     name: "Bite",
                     abilityModifier: 4, // Dexterity modifier
-                    damageDice: "1d6",
                     description: "Add +4 for Dexterity."
                 },
                 claw: {
                     name: "Claw",
                     abilityModifier: 4, // Dexterity modifier
-                    damageDice: "2d4",
                     description: "Add +4 for Dexterity."
                 }
             }
@@ -146,40 +143,37 @@
         function analyzeAction() {
             const character = document.getElementById('character').value;
             const action = document.getElementById('action').value;
-            const roll = parseInt(document.getElementById('roll').value);
+            const attackRoll = parseInt(document.getElementById('attackRoll').value);
+            const damageRoll = parseInt(document.getElementById('damageRoll').value);
             const environment = parseInt(document.getElementById('environment').value);
 
             const actionDetails = actions[character][action];
-            let finalRoll = roll + actionDetails.abilityModifier;
+            let finalAttackRoll = attackRoll + actionDetails.abilityModifier;
 
-                       // Handle advantage/disadvantage
+            // Handle advantage/disadvantage
             if (environment === 1) { // Advantage
                 const secondRoll = Math.floor(Math.random() * 20) + 1;
-                finalRoll = Math.max(finalRoll, secondRoll + actionDetails.abilityModifier);
+                finalAttackRoll = Math.max(finalAttackRoll, secondRoll + actionDetails.abilityModifier);
             } else if (environment === -1) { // Disadvantage
                 const secondRoll = Math.floor(Math.random() * 20) + 1;
-                finalRoll = Math.min(finalRoll, secondRoll + actionDetails.abilityModifier);
+                finalAttackRoll = Math.min(finalAttackRoll, secondRoll + actionDetails.abilityModifier);
             }
 
             let output = `Action: ${actionDetails.name} <br>`;
-            output += `Roll: ${roll} + ${actionDetails.abilityModifier} modifier = Final Roll: ${finalRoll} <br>`;
+            output += `Attack Roll: ${attackRoll} + ${actionDetails.abilityModifier} modifier = Final Attack Roll: ${finalAttackRoll} <br>`;
+            let totalDamage = damageRoll + actionDetails.abilityModifier;
 
-            if (actionDetails.damageDice) {
-                const damageRoll = rollDice(actionDetails.damageDice);
-                let totalDamage = damageRoll + actionDetails.abilityModifier;
+            if (actionDetails.extraDamage) {
+                totalDamage += actionDetails.extraDamage;
+                output += `Damage: Rolled ${damageRoll} + ${actionDetails.abilityModifier} modifier + ${actionDetails.extraDamage} (Rage bonus) = ${totalDamage} damage<br>`;
+            } else {
+                output += `Damage: Rolled ${damageRoll} + ${actionDetails.abilityModifier} modifier = ${totalDamage} damage<br>`;
+            }
 
-                if (actionDetails.extraDamage) {
-                    totalDamage += actionDetails.extraDamage;
-                    output += `Damage: Rolled ${damageRoll} on ${actionDetails.damageDice} + ${actionDetails.abilityModifier} modifier + ${actionDetails.extraDamage} (Rage bonus) = ${totalDamage} damage<br>`;
-                } else {
-                    output += `Damage: Rolled ${damageRoll} on ${actionDetails.damageDice} + ${actionDetails.abilityModifier} modifier = ${totalDamage} damage<br>`;
-                }
-
-                if (actionDetails.bonusDamageDice && action === "pounce") {
-                    const bonusDamageRoll = rollDice(actionDetails.bonusDamageDice);
-                    const bonusTotalDamage = bonusDamageRoll + actionDetails.abilityModifier;
-                    output += `Bonus Damage (Bite on Pounce): Rolled ${bonusDamageRoll} on ${actionDetails.bonusDamageDice} + ${actionDetails.abilityModifier} modifier = ${bonusTotalDamage} damage<br>`;
-                }
+            if (actionDetails.bonusDamageDice && action === "pounce") {
+                const bonusDamageRoll = parseInt(prompt(`Enter your roll for the bonus bite damage (e.g., 4):`));
+                const bonusTotalDamage = bonusDamageRoll + actionDetails.abilityModifier;
+                output += `Bonus Damage (Bite on Pounce): Rolled ${bonusDamageRoll} on ${actionDetails.bonusDamageDice} + ${actionDetails.abilityModifier} modifier = ${bonusTotalDamage} damage<br>`;
             }
 
             if (environment === 2) {
@@ -192,19 +186,9 @@
             document.getElementById('result').style.display = 'block';
         }
 
-        function rollDice(dice) {
-            const [num, sides] = dice.split('d').map(Number);
-            let total = 0;
-            for (let i = 0; i < num; i++) {
-                total += Math.floor(Math.random() * sides) + 1;
-            }
-            return total;
-        }
-
         document.getElementById('character').addEventListener('change', populateActions);
         populateActions(); // Initial population based on default character selection
     </script>
 </body>
 </html>
-
 
