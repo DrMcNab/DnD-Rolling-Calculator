@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lyra and Ciriri Action Analyzer</title>
+    <title>Lyra and Ciriri Combat Analyzer</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -27,7 +27,7 @@
             margin-bottom: 10px;
             color: #666;
         }
-        select, input {
+        input[type="text"], select {
             width: 100%;
             padding: 8px;
             margin-bottom: 20px;
@@ -56,7 +56,7 @@
 </head>
 <body>
     <div class="container">
-        <h1>Lyra and Ciriri Action Analyzer</h1>
+        <h1>Lyra and Ciriri Combat Analyzer</h1>
 
         <label for="character">Select Character:</label>
         <select id="character">
@@ -66,6 +66,9 @@
 
         <label for="action">Select Action:</label>
         <select id="action"></select>
+
+        <label for="roll">Enter Roll:</label>
+        <input type="text" id="roll" placeholder="Enter your roll result (e.g., 15)">
 
         <label for="environment">Environmental Factor:</label>
         <select id="environment">
@@ -86,75 +89,43 @@
             lyra: {
                 greataxe: {
                     name: "Attack with Greataxe",
-                    rollType: "d20",
+                    abilityModifier: 3, // Strength modifier
                     damageDice: "1d12",
-                    abilityModifier: 3, // Strength modifier
                     extraDamage: 2, // Rage bonus, if applicable
-                    description: "Roll a d20 for attack and 1d12 for damage. Add +3 for Strength and +2 if raging."
-                },
-                handaxe: {
-                    name: "Throw a Handaxe",
-                    rollType: "d20",
-                    damageDice: "1d6",
-                    abilityModifier: 3, // Strength modifier
-                    description: "Roll a d20 for attack and 1d6 for damage. Add +3 for Strength."
+                    description: "Add +3 for Strength and +2 if raging."
                 },
                 unarmedStrike: {
                     name: "Unarmed Strike",
-                    rollType: "d20",
+                    abilityModifier: 3, // Strength modifier
                     damageDice: "1d4",
-                    abilityModifier: 3, // Strength modifier
-                    description: "Roll a d20 for attack and 1d4 for damage. Add +3 for Strength."
+                    description: "Add +3 for Strength."
                 },
-                environment: {
+                environmentWeapon: {
                     name: "Use Environmental Weapon",
-                    rollType: "d20",
+                    abilityModifier: 3, // Strength modifier
                     damageDice: "1d8",
-                    abilityModifier: 3, // Strength modifier
-                    description: "Roll a d20 for attack and 1d8 for damage. Add +3 for Strength."
-                },
-                grapple: {
-                    name: "Grapple an Enemy",
-                    rollType: "d20",
-                    abilityModifier: 3, // Strength modifier
-                    description: "Opposed Strength (Athletics) check to grapple an enemy."
+                    description: "Add +3 for Strength."
                 }
             },
             ciriri: {
                 pounce: {
                     name: "Pounce",
-                    rollType: "d20",
-                    damageDice: "2d4",
                     abilityModifier: 4, // Dexterity modifier
-                    bonusAction: "Bite (if target is prone)",
+                    damageDice: "2d4",
                     bonusDamageDice: "1d6",
-                    description: "Ciriri pounces on the enemy. Roll a d20 for the claw attack, 2d4 for damage. If the target is knocked prone, follow up with a bite: roll 1d6 for bite damage."
+                    description: "Add +4 for Dexterity. Follow up with bite: roll 1d6 for bite damage if target is prone."
                 },
                 bite: {
                     name: "Bite",
-                    rollType: "d20",
-                    damageDice: "1d6",
                     abilityModifier: 4, // Dexterity modifier
-                    description: "Roll a d20 for attack and 1d6 for damage. Add +4 for Dexterity."
+                    damageDice: "1d6",
+                    description: "Add +4 for Dexterity."
                 },
                 claw: {
                     name: "Claw",
-                    rollType: "d20",
+                    abilityModifier: 4, // Dexterity modifier
                     damageDice: "2d4",
-                    abilityModifier: 4, // Dexterity modifier
-                    description: "Roll a d20 for attack and 2d4 for damage. Add +4 for Dexterity."
-                },
-                stealth: {
-                    name: "Stealth (Hide)",
-                    rollType: "d20",
-                    abilityModifier: 4, // Dexterity modifier
-                    description: "Roll a d20 for Stealth (Hide) check. Add +4 for Dexterity."
-                },
-                intimidate: {
-                    name: "Intimidate (Growl or Roar)",
-                    rollType: "d20",
-                    abilityModifier: 1, // Charisma modifier
-                    description: "Roll a d20 for Intimidate check. Add +1 for Charisma."
+                    description: "Add +4 for Dexterity."
                 }
             }
         };
@@ -175,38 +146,40 @@
         function analyzeAction() {
             const character = document.getElementById('character').value;
             const action = document.getElementById('action').value;
+            const roll = parseInt(document.getElementById('roll').value);
             const environment = parseInt(document.getElementById('environment').value);
 
             const actionDetails = actions[character][action];
-            const roll = Math.floor(Math.random() * 20) + 1;
             let finalRoll = roll + actionDetails.abilityModifier;
 
-            // Handle advantage/disadvantage
-            if (environment === 1) {
+                       // Handle advantage/disadvantage
+            if (environment === 1) { // Advantage
                 const secondRoll = Math.floor(Math.random() * 20) + 1;
                 finalRoll = Math.max(finalRoll, secondRoll + actionDetails.abilityModifier);
-            } else if (environment === -1) {
+            } else if (environment === -1) { // Disadvantage
                 const secondRoll = Math.floor(Math.random() * 20) + 1;
                 finalRoll = Math.min(finalRoll, secondRoll + actionDetails.abilityModifier);
             }
 
             let output = `Action: ${actionDetails.name} <br>`;
-            output += `Roll: ${roll} (d20) + ${actionDetails.abilityModifier} modifier = Final Roll: ${finalRoll} <br>`;
+            output += `Roll: ${roll} + ${actionDetails.abilityModifier} modifier = Final Roll: ${finalRoll} <br>`;
+
             if (actionDetails.damageDice) {
                 const damageRoll = rollDice(actionDetails.damageDice);
-                const totalDamage = damageRoll + actionDetails.abilityModifier + (actionDetails.extraDamage || 0);
-                output += `Damage: Rolled ${damageRoll} on ${actionDetails.damageDice} + ${actionDetails.abilityModifier} modifier`;
-                if (actionDetails.extraDamage) {
-                    output += ` + ${actionDetails.extraDamage} (Rage bonus)`;
-                }
-                output += ` = ${totalDamage} damage<br>`;
-            }
+                let totalDamage = damageRoll + actionDetails.abilityModifier;
 
-            if (actionDetails.bonusAction) {
-                output += `Bonus Action: ${actionDetails.bonusAction} (if applicable) <br>`;
-                const bonusDamageRoll = rollDice(actionDetails.bonusDamageDice);
-                const bonusTotalDamage = bonusDamageRoll + actionDetails.abilityModifier;
-                output += `Bonus Damage: Rolled ${bonusDamageRoll} on ${actionDetails.bonusDamageDice} + ${actionDetails.abilityModifier} modifier = ${bonusTotalDamage} damage<br>`;
+                if (actionDetails.extraDamage) {
+                    totalDamage += actionDetails.extraDamage;
+                    output += `Damage: Rolled ${damageRoll} on ${actionDetails.damageDice} + ${actionDetails.abilityModifier} modifier + ${actionDetails.extraDamage} (Rage bonus) = ${totalDamage} damage<br>`;
+                } else {
+                    output += `Damage: Rolled ${damageRoll} on ${actionDetails.damageDice} + ${actionDetails.abilityModifier} modifier = ${totalDamage} damage<br>`;
+                }
+
+                if (actionDetails.bonusDamageDice && action === "pounce") {
+                    const bonusDamageRoll = rollDice(actionDetails.bonusDamageDice);
+                    const bonusTotalDamage = bonusDamageRoll + actionDetails.abilityModifier;
+                    output += `Bonus Damage (Bite on Pounce): Rolled ${bonusDamageRoll} on ${actionDetails.bonusDamageDice} + ${actionDetails.abilityModifier} modifier = ${bonusTotalDamage} damage<br>`;
+                }
             }
 
             if (environment === 2) {
@@ -233,4 +206,5 @@
     </script>
 </body>
 </html>
+
 
