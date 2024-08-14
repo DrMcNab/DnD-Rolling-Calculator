@@ -105,6 +105,11 @@
                     name: "Use Environmental Weapon",
                     abilityModifier: 3, // Strength modifier
                     description: "Add +3 for Strength."
+                },
+                throwHandaxe: {
+                    name: "Throw Handaxe",
+                    abilityModifier: 3, // Strength modifier
+                    description: "Add +3 for Strength."
                 }
             },
             ciriri: {
@@ -152,10 +157,10 @@
 
             // Handle advantage/disadvantage
             if (environment === 1) { // Advantage
-                const secondRoll = Math.floor(Math.random() * 20) + 1;
+                const secondRoll = parseInt(prompt(`Enter your second roll for advantage (e.g., 18):`));
                 finalAttackRoll = Math.max(finalAttackRoll, secondRoll + actionDetails.abilityModifier);
             } else if (environment === -1) { // Disadvantage
-                const secondRoll = Math.floor(Math.random() * 20) + 1;
+                const secondRoll = parseInt(prompt(`Enter your second roll for disadvantage (e.g., 10):`));
                 finalAttackRoll = Math.min(finalAttackRoll, secondRoll + actionDetails.abilityModifier);
             }
 
@@ -191,4 +196,5 @@
     </script>
 </body>
 </html>
+
 
