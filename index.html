@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lyra's Roll Analyzer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        h1 {
+            color: #333;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e7f3ff;
+            border-left: 4px solid #007BFF;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lyra's Roll Analyzer</h1>
+
+        <label for="ability">Select Ability:</label>
+        <select id="ability">
+            <option value="strength">Strength</option>
+            <option value="dexterity">Dexterity</option>
+            <option value="constitution">Constitution</option>
+            <option value="intelligence">Intelligence</option>
+            <option value="wisdom">Wisdom</option>
+            <option value="charisma">Charisma</option>
+        </select>
+
+        <label for="rollType">Select Dice Roll:</label>
+        <select id="rollType">
+            <option value="d20">d20</option>
+            <option value="d12">d12</option>
+            <option value="d10">d10</option>
+            <option value="d8">d8</option>
+            <option value="d6">d6</option>
+            <option value="d4">d4</option>
+        </select>
+
+        <label for="roll">Roll:</label>
+        <input type="number" id="roll" placeholder="Enter your roll" required>
+
+        <label for="damage">Damage (if applicable):</label>
+        <input type="number" id="damage" placeholder="Enter damage done">
+
+        <label for="environment">Environmental Factor:</label>
+        <select id="environment">
+            <option value="0">None</option>
+            <option value="1">Advantage</option>
+            <option value="-1">Disadvantage</option>
+            <option value="2">Cover (+2 AC)</option>
+            <option value="5">Full Cover (+5 AC)</option>
+        </select>
+
+        <button onclick="calculateResult()">Analyze Roll</button>
+
+        <div id="result" class="result" style="display: none;"></div>
+    </div>
+
+    <script>
+        const abilityModifiers = {
+            strength: 3,   // Replace with Lyra's actual modifiers
+            dexterity: 2,
+            constitution: 3,
+            intelligence: 0,
+            wisdom: 2,
+            charisma: 1
+        };
+
+        function calculateResult() {
+            const ability = document.getElementById('ability').value;
+            const rollType = document.getElementById('rollType').value;
+            const roll = parseInt(document.getElementById('roll').value);
+            const damage = parseInt(document.getElementById('damage').value) || 0;
+            const environment = parseInt(document.getElementById('environment').value);
+
+            let abilityModifier = abilityModifiers[ability];
+            let finalRoll = roll + abilityModifier;
+
+            // Handle advantage/disadvantage
+            if (environment === 1) {
+                finalRoll = Math.max(finalRoll, (Math.floor(Math.random() * 20) + 1) + abilityModifier);
+            } else if (environment === -1) {
+                finalRoll = Math.min(finalRoll, (Math.floor(Math.random() * 20) + 1) + abilityModifier);
+            }
+
+            let output = `Selected Ability: ${ability.charAt(0).toUpperCase() + ability.slice(1)} <br>`;
+            output += `Rolled: ${roll} on a ${rollType}, with a modifier of ${abilityModifier}. <br>`;
+            output += `Final Roll: ${finalRoll} <br>`;
+
+            if (environment === 2) {
+                output += `Opponent has partial cover (+2 AC). Adjust your attack roll accordingly. <br>`;
+            } else if (environment === 5) {
+                output += `Opponent has full cover (+5 AC). Adjust your attack roll accordingly. <br>`;
+            }
+
+            output += `Damage Done: ${damage}`;
+
+            document.getElementById('result').innerHTML = output;
+            document.getElementById('result').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
